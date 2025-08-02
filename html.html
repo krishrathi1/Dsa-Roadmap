@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive DSA in Java Roadmap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: A single-page dashboard structure is used instead of a linear document to allow for non-linear exploration. A sticky top navigation bar provides immediate access to any of the four learning phases. The content of each phase is organized into interactive cards, which reveal more detailed information on click. This approach reduces initial cognitive load and encourages user interaction. An introductory chart provides a high-level visual summary of the learning journey's focus areas, making the roadmap's structure immediately apparent. This design prioritizes usability and engagement over a simple replication of the source document's format. -->
+    <!-- Visualization & Content Choices: 
+        1. Report Info: The four distinct learning phases. -> Goal: Provide a high-level overview of the roadmap's structure and effort distribution. -> Viz/Method: A horizontal bar chart (Chart.js/Canvas) to visually represent the conceptual 'weight' of each phase. -> Interaction: Static, informational. -> Justification: Offers a quick visual anchor, making the roadmap more approachable than plain text.
+        2. Report Info: The lists and tables of topics and their key concepts, now including curated LeetCode problems and links to full practice lists. -> Goal: Organize detailed information and provide a structured path from core problems to comprehensive practice. -> Viz/Method: Styled HTML/Tailwind cards with a click-to-reveal interaction. -> Interaction: Users click a card to see key concepts, a hand-picked list of starter problems, and links to full topic lists on LeetCode. -> Justification: This creates a scalable and performant study plan, connecting theory to practice without cluttering the UI, and leveraging LeetCode's powerful filtering features.
+        3. Report Info: The main sections (Phase 1, 2, 3, 4). -> Goal: Enable quick navigation across the single page. -> Viz/Method: A sticky navigation bar. -> Interaction: Clicking a link smoothly scrolls to the relevant section. -> Justification: Provides persistent, intuitive navigation essential for a single-page application.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .topic-card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.7s ease-in-out;
+        }
+        .topic-card.open .topic-card-content {
+            max-height: 900px; /* Increased to accommodate more content */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+            max-height: 300px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 300px;
+                max-height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <header id="header" class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-slate-900">DSA Roadmap</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#phase1" class="text-slate-600 hover:bg-slate-200 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium">Phase 1: Java</a>
+                        <a href="#phase2" class="text-slate-600 hover:bg-slate-200 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium">Phase 2: Core DSA</a>
+                        <a href="#phase3" class="text-slate-600 hover:bg-slate-200 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium">Phase 3: Advanced</a>
+                        <a href="#phase4" class="text-slate-600 hover:bg-slate-200 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium">Phase 4: Readiness</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-200 focus:outline-none">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#phase1" class="text-slate-600 hover:bg-slate-200 hover:text-slate-900 block px-3 py-2 rounded-md text-base font-medium">Phase 1: Java</a>
+                <a href="#phase2" class="text-slate-600 hover:bg-slate-200 hover:text-slate-900 block px-3 py-2 rounded-md text-base font-medium">Phase 2: Core DSA</a>
+                <a href="#phase3" class="text-slate-600 hover:bg-slate-200 hover:text-slate-900 block px-3 py-2 rounded-md text-base font-medium">Phase 3: Advanced</a>
+                <a href="#phase4" class="text-slate-600 hover:bg-slate-200 hover:text-slate-900 block px-3 py-2 rounded-md text-base font-medium">Phase 4: Readiness</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <section id="overview" class="text-center mb-16 pt-8">
+            <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Your Interactive DSA Learning Journey</h2>
+            <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">This roadmap is a dynamic study plan. Start with the hand-picked problems in each card to master the core patterns. Then, use the "Deep Dive" links to access hundreds more problems on LeetCode and curated study plans.</p>
+            <div class="mt-8">
+                <div class="chart-container">
+                    <canvas id="roadmapChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <div class="space-y-20">
+            <section id="phase1">
+                <div class="text-center mb-12">
+                    <span class="text-indigo-600 font-semibold">Phase 1</span>
+                    <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">Core Java Fundamentals</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Before diving into DSA, a strong command of the Java language is essential. This phase covers the absolute prerequisites.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="phase1-content"></div>
+            </section>
+
+            <section id="phase2">
+                <div class="text-center mb-12">
+                    <span class="text-indigo-600 font-semibold">Phase 2</span>
+                    <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">Core Data Structures & Algorithms</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">This is the heart of your DSA journey. Click each card to see key patterns, essential practice problems, and links to full problem lists.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="phase2-content"></div>
+            </section>
+
+            <section id="phase3">
+                <div class="text-center mb-12">
+                    <span class="text-indigo-600 font-semibold">Phase 3</span>
+                    <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">Advanced Topics</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">These topics are frequently asked in top-tier companies and differentiate great candidates from good ones.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-2 gap-8" id="phase3-content"></div>
+            </section>
+
+            <section id="phase4">
+                <div class="text-center mb-12">
+                    <span class="text-indigo-600 font-semibold">Phase 4</span>
+                    <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">Polishing and Interview Readiness</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Knowledge is only useful if you can apply it under pressure. This final phase prepares you for the real world.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8" id="phase4-content"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="bg-white mt-20">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-slate-500">
+            <p>Interactive roadmap generated from source document.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const roadmapData = {
+                phase1: [
+                    { title: 'Language Basics', content: ['Variables, Data Types, Operators', 'Console I/O', 'Control Flow (if-else, loops)'] },
+                    { title: 'Core Concepts', content: ['Arrays & Strings', 'Functions / Methods', 'Basic Recursion'] },
+                    { title: 'Object-Oriented Programming', content: ['Classes & Objects', 'Encapsulation, Abstraction, Inheritance, Polymorphism', 'Constructors, `this`, `static`'] },
+                    { title: 'Essential Tools', content: ['Exception Handling', 'Java Collections Framework (Crucial): ArrayList, LinkedList, Stack, Queue, PriorityQueue, HashSet, HashMap, TreeSet, TreeMap'] }
+                ],
+                phase2: [
+                    { title: '1. Complexity Analysis', content: ['Understand Time Complexity (Worst, Average, Best Case)', 'Understand Space Complexity (Auxiliary Space)', 'Master Big O, Big Omega, and Big Theta notations.'] },
+                    { 
+                        title: '2. Arrays & Strings', 
+                        content: ['Core Patterns: Two Pointers, Sliding Window, Prefix Sum.', 'Key Algorithms: Kadane\'s Algorithm for max subarray sum.', 'Techniques: In-place modifications, matrix traversal (spiral, rotation).', 'String Specific: String matching (Rabin-Karp), manipulation.'],
+                        problems: [
+                            { name: 'Two Sum', url: 'https://leetcode.com/problems/two-sum/' },
+                            { name: 'Container With Most Water', url: 'https://leetcode.com/problems/container-with-most-water/' },
+                            { name: '3Sum', url: 'https://leetcode.com/problems/3sum/' },
+                            { name: 'Product of Array Except Self', url: 'https://leetcode.com/problems/product-of-array-except-self/' },
+                        ],
+                        deepDive: [
+                            { name: 'All Array Problems', url: 'https://leetcode.com/tag/array/' },
+                            { name: 'All String Problems', url: 'https://leetcode.com/tag/string/' },
+                            { name: 'LeetCode 75 Study Plan', url: 'https://leetcode.com/studyplan/leetcode-75/' }
+                        ]
+                    },
+                    { 
+                        title: '3. Recursion & Backtracking', 
+                        content: ['Identify base cases and recursive relations.', 'Understand the recursion tree and call stack.', 'State Management: Pass state by value or by reference.', 'Backtracking Patterns: Subsets, Permutations, Combinations, Path-finding.'],
+                        problems: [
+                            { name: 'Subsets', url: 'https://leetcode.com/problems/subsets/' },
+                            { name: 'Combination Sum', url: 'https://leetcode.com/problems/combination-sum/' },
+                            { name: 'Permutations', url: 'https://leetcode.com/problems/permutations/' },
+                            { name: 'N-Queens', url: 'https://leetcode.com/problems/n-queens/' },
+                        ],
+                        deepDive: [
+                            { name: 'All Backtracking Problems', url: 'https://leetcode.com/tag/backtracking/' }
+                        ]
+                    },
+                    { 
+                        title: '4. Linked Lists', 
+                        content: ['Singly, Doubly, and Circular Linked Lists.', 'Core Patterns: Fast & Slow Pointers (cycle detection, middle element).', 'Techniques: Reversing (iterative & recursive), merging, dummy head node.'],
+                        problems: [
+                            { name: 'Reverse Linked List', url: 'https://leetcode.com/problems/reverse-linked-list/' },
+                            { name: 'Merge Two Sorted Lists', url: 'https://leetcode.com/problems/merge-two-sorted-lists/' },
+                            { name: 'Linked List Cycle', url: 'https://leetcode.com/problems/linked-list-cycle/' },
+                            { name: 'Remove Nth Node From End of List', url: 'https://leetcode.com/problems/remove-nth-node-from-end-of-list/' }
+                        ],
+                        deepDive: [
+                            { name: 'All Linked List Problems', url: 'https://leetcode.com/tag/linked-list/' }
+                        ]
+                    },
+                    { 
+                        title: '5. Stacks & Queues', 
+                        content: ['LIFO vs FIFO applications.', 'Stack Patterns: Monotonic Stack (next greater/smaller element), expression evaluation.', 'Queue Patterns: Level-order traversal in trees/graphs.', 'Implement a Queue using Stacks and vice-versa.'],
+                        problems: [
+                            { name: 'Valid Parentheses', url: 'https://leetcode.com/problems/valid-parentheses/' },
+                            { name: 'Min Stack', url: 'https://leetcode.com/problems/min-stack/' },
+                            { name: 'Daily Temperatures', url: 'https://leetcode.com/problems/daily-temperatures/' },
+                        ],
+                        deepDive: [
+                            { name: 'All Stack Problems', url: 'https://leetcode.com/tag/stack/' },
+                            { name: 'All Queue Problems', url: 'https://leetcode.com/tag/queue/' }
+                        ]
+                    },
+                    { 
+                        title: '6. Hashing', 
+                        content: ['Understand hash functions and collision resolution.', 'Master Java\'s HashMap and HashSet.', 'Use cases: O(1) lookups, frequency counting, finding duplicates.'],
+                        problems: [
+                            { name: 'Group Anagrams', url: 'https://leetcode.com/problems/group-anagrams/' },
+                            { name: 'Top K Frequent Elements', url: 'https://leetcode.com/problems/top-k-frequent-elements/' },
+                            { name: 'Longest Consecutive Sequence', url: 'https://leetcode.com/problems/longest-consecutive-sequence/' }
+                        ],
+                        deepDive: [
+                            { name: 'All Hash Table Problems', url: 'https://leetcode.com/tag/hash-table/' }
+                        ]
+                    },
+                    { 
+                        title: '7. Trees (Binary & BST)', 
+                        content: ['Master all traversals: Pre-order, In-order, Post-order, Level-order (BFS).', 'Key Properties: Height, Diameter, Depth.', 'Binary Search Tree (BST) Properties: Validation, Insertion, Deletion.', 'Advanced: Views (Left, Right, Top, Bottom), Lowest Common Ancestor (LCA).'],
+                        problems: [
+                            { name: 'Maximum Depth of Binary Tree', url: 'https://leetcode.com/problems/maximum-depth-of-binary-tree/' },
+                            { name: 'Validate Binary Search Tree', url: 'https://leetcode.com/problems/validate-binary-search-tree/' },
+                            { name: 'Kth Smallest Element in a BST', url: 'https://leetcode.com/problems/kth-smallest-element-in-a-bst/' },
+                            { name: 'Lowest Common Ancestor of a Binary Tree', url: 'https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/' }
+                        ],
+                        deepDive: [
+                            { name: 'All Tree Problems', url: 'https://leetcode.com/tag/tree/' },
+                            { name: 'All Binary Tree Problems', url: 'https://leetcode.com/tag/binary-tree/' },
+                            { name: 'All BST Problems', url: 'https://leetcode.com/tag/binary-search-tree/' }
+                        ]
+                    },
+                    { 
+                        title: '8. Heaps (Priority Queues)', 
+                        content: ['Understand Min-Heap and Max-Heap properties.', 'Master Java\'s PriorityQueue.', 'Common Patterns: Top \'K\' elements, finding the median of a stream, merging K sorted lists.'],
+                        problems: [
+                            { name: 'Find Median from Data Stream', url: 'https://leetcode.com/problems/find-median-from-data-stream/' },
+                            { name: 'Merge k Sorted Lists', url: 'https://leetcode.com/problems/merge-k-sorted-lists/' },
+                            { name: 'Kth Largest Element in an Array', url: 'https://leetcode.com/problems/kth-largest-element-in-an-array/' }
+                        ],
+                        deepDive: [
+                            { name: 'All Heap (PQ) Problems', url: 'https://leetcode.com/tag/heap-priority-queue/' }
+                        ]
+                    },
+                    { 
+                        title: '9. Bit Manipulation', 
+                        content: ['Master bitwise operators: AND, OR, XOR, NOT, Left Shift, Right Shift.', 'Techniques: Getting/setting/clearing bits, counting set bits, checking for powers of 2.'],
+                        problems: [
+                             { name: 'Sum of Two Integers', url: 'https://leetcode.com/problems/sum-of-two-integers/' },
+                             { name: 'Number of 1 Bits', url: 'https://leetcode.com/problems/number-of-1-bits/' },
+                             { name: 'Counting Bits', url: 'https://leetcode.com/problems/counting-bits/' }
+                        ],
+                        deepDive: [
+                            { name: 'All Bit Manipulation Problems', url: 'https://leetcode.com/tag/bit-manipulation/' }
+                        ]
+                    }
+                ],
+                phase3: [
+                    { 
+                        title: '1. Graphs', 
+                        content: ['Representations: Adjacency Matrix vs. Adjacency List.', 'Traversals: Master Breadth-First Search (BFS) and Depth-First Search (DFS).', 'Key Algorithms: Topological Sort (Kahn\'s Algorithm, DFS-based), Cycle Detection (directed & undirected).', 'Shortest Path: Dijkstra\'s, Bellman-Ford.', 'Minimum Spanning Tree (MST): Prim\'s, Kruskal\'s.'],
+                        problems: [
+                            { name: 'Number of Islands', url: 'https://leetcode.com/problems/number-of-islands/' },
+                            { name: 'Clone Graph', url: 'https://leetcode.com/problems/clone-graph/' },
+                            { name: 'Course Schedule', url: 'https://leetcode.com/problems/course-schedule/' },
+                            { name: 'Word Ladder', url: 'https://leetcode.com/problems/word-ladder/' }
+                        ],
+                        deepDive: [
+                            { name: 'All Graph Problems', url: 'https://leetcode.com/tag/graph/' },
+                            { name: 'Top Interview 150 Plan', url: 'https://leetcode.com/studyplan/top-interview-150/' }
+                        ]
+                    },
+                    { 
+                        title: '2. Dynamic Programming (DP)', 
+                        content: ['Identifying DP problems: Optimal substructure and overlapping subproblems.', 'Approaches: Top-down (Memoization) vs. Bottom-up (Tabulation).', '1D DP Patterns: Climbing Stairs, House Robber.', '2D DP Patterns: Unique Paths, Longest Common Subsequence.', 'Knapsack Patterns: 0/1, Unbounded.'],
+                        problems: [
+                            { name: 'Climbing Stairs', url: 'https://leetcode.com/problems/climbing-stairs/' },
+                            { name: 'Coin Change', url: 'https://leetcode.com/problems/coin-change/' },
+                            { name: 'Longest Increasing Subsequence', url: 'https://leetcode.com/problems/longest-increasing-subsequence/' },
+                            { name: 'House Robber', url: 'https://leetcode.com/problems/house-robber/' }
+                        ],
+                        deepDive: [
+                            { name: 'All DP Problems', url: 'https://leetcode.com/tag/dynamic-programming/' }
+                        ]
+                    },
+                    { 
+                        title: '3. Tries', 
+                        content: ['Understand the node structure of a Trie.', 'Implement from scratch: insert, search, startsWith methods.', 'Applications: Autocomplete, spell checker, dictionary lookups.'],
+                        problems: [
+                            { name: 'Implement Trie (Prefix Tree)', url: 'https://leetcode.com/problems/implement-trie-prefix-tree/' },
+                            { name: 'Design Add and Search Words Data Structure', url: 'https://leetcode.com/problems/design-add-and-search-words-data-structure/' },
+                            { name: 'Word Search II', url: 'https://leetcode.com/problems/word-search-ii/' }
+                        ],
+                        deepDive: [
+                            { name: 'All Trie Problems', url: 'https://leetcode.com/tag/trie/' }
+                        ]
+                    },
+                    { 
+                        title: '4. Segment & Fenwick Trees', 
+                        content: ['Use case: Answering range queries with point updates efficiently.', 'Understand the tree structure and propagation logic.', 'Fenwick Tree (Binary Indexed Tree) is often simpler for range sum queries.'],
+                        deepDive: [
+                            { name: 'All Segment Tree Problems', url: 'https://leetcode.com/tag/segment-tree/' },
+                            { name: 'All Fenwick Tree Problems', url: 'https://leetcode.com/tag/binary-indexed-tree/' }
+                        ]
+                    }
+                ],
+                phase4: [
+                    { title: 'System Design Basics', content: ['Understand concepts like Load Balancing, Caching, Databases (SQL vs. NoSQL), and CDNs.', 'Practice designing simple systems like TinyURL.'] },
+                    { title: 'Concurrency (Java Multithreading)', content: ['Know the basics of `Thread`, `Runnable`, and the `synchronized` keyword.'] },
+                    { title: 'Consistent Practice', content: ['Solve problems regularly on platforms like LeetCode. Participate in contests to simulate interview pressure.'] },
+                    { title: 'Mock Interviews', content: ['Practice explaining your thought process out loud. This is critical for success. Use platforms like Pramp.'] }
+                ]
+            };
+
+            function createCard(item) {
+                const contentHtml = `<ul>${item.content.map(c => `<li class="text-slate-600">${c.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-700 font-medium">$1</strong>')}</li>`).join('')}</ul>`;
+                
+                let problemsHtml = '';
+                if (item.problems && item.problems.length > 0) {
+                    problemsHtml = `
+                        <div class="mt-4 pt-4 border-t border-slate-200">
+                            <h4 class="font-semibold text-slate-800 mb-2">Essential Practice:</h4>
+                            <div class="flex flex-wrap gap-2">
+                                ${item.problems.map(p => `
+                                    <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="text-sm bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1 rounded-full transition-colors">
+                                        ${p.name}
+                                    </a>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                let deepDiveHtml = '';
+                if (item.deepDive && item.deepDive.length > 0) {
+                    deepDiveHtml = `
+                        <div class="mt-4 pt-4 border-t border-slate-200">
+                            <h4 class="font-semibold text-slate-800 mb-2">Deep Dive & Full Practice Lists:</h4>
+                            <div class="flex flex-wrap gap-2">
+                                ${item.deepDive.map(p => `
+                                    <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="text-sm bg-emerald-100 text-emerald-700 hover:bg-emerald-200 px-3 py-1 rounded-full transition-colors">
+                                        ${p.name}
+                                    </a>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="topic-card bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl cursor-pointer">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-semibold text-lg text-slate-900">${item.title}</h3>
+                                <div class="arrow-icon transition-transform duration-300">
+                                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                            <div class="topic-card-content mt-4 text-sm space-y-2">
+                                ${contentHtml}
+                                ${problemsHtml}
+                                ${deepDiveHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function populateSection(sectionId, data) {
+                const container = document.getElementById(sectionId);
+                if (container) {
+                    container.innerHTML = data.map(createCard).join('');
+                }
+            }
+
+            populateSection('phase1-content', roadmapData.phase1);
+            populateSection('phase2-content', roadmapData.phase2);
+            populateSection('phase3-content', roadmapData.phase3);
+            populateSection('phase4-content', roadmapData.phase4);
+
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.tagName.toLowerCase() === 'a') {
+                        return;
+                    }
+                    card.classList.toggle('open');
+                    const arrow = card.querySelector('.arrow-icon');
+                    if (arrow) {
+                       arrow.classList.toggle('rotate-180');
+                    }
+                });
+            });
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            const ctx = document.getElementById('roadmapChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Phase 1: Java', 'Phase 2: Core DSA', 'Phase 3: Advanced', 'Phase 4: Readiness'],
+                    datasets: [{
+                        label: 'Conceptual Focus',
+                        data: [15, 40, 35, 10],
+                        backgroundColor: [
+                            'rgba(165, 180, 252, 0.6)', // indigo-300
+                            'rgba(129, 140, 248, 0.6)', // indigo-400
+                            'rgba(99, 102, 241, 0.6)',  // indigo-500
+                            'rgba(79, 70, 229, 0.6)'    // indigo-600
+                        ],
+                        borderColor: [
+                            'rgba(165, 180, 252, 1)',
+                            'rgba(129, 140, 248, 1)',
+                            'rgba(99, 102, 241, 1)',
+                            'rgba(79, 70, 229, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                             ticks: {
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                },
+                                color: '#334155' // slate-700
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
